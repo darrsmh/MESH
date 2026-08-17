@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+
+/* ── Seismogram canvas ──────────────────────────────────────── */
+.seismo-canvas {
+  display : block;
+  width   : 100%;
+  height  : 96px;
+  image-rendering: pixelated;
+}
+
+/* ── Animated alert pulse ────────────────────────────────────── */
+@keyframes alertPulse {
+  0%,100% { opacity: 1; }
+  50%     { opacity: .4; }
+}
+.alert-pulse { animation: alertPulse 1s ease-in-out infinite; }
+
+/* ── Blink dot for live indicator ────────────────────────────── */
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50%     { opacity: .2; }
+}
+.blink { animation: blink 1.4s ease-in-out infinite; }
