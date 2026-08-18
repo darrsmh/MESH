@@ -20,12 +20,12 @@ export async function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  // ── Authentication ─────────────────────────────────────────
+  // --- Authentication ---------------------------------------------
   if (!API_KEY || req.headers.get("x-api-key") !== API_KEY) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // ── Parse body ─────────────────────────────────────────────
+  // --- Parse body ------------------------------------------------
   let body: {
     node_id    : number;
     fw_version?: string;
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing node_id or samples" }, { status: 400 });
   }
 
-  // ── Compute PGA and tag each sample with node_id ───────────
+  // --- Compute PGA and tag each sample with node_id ---------------
   const tagged: Sample[] = samples.map((s) => ({
     node_id,
     t  : s.t,
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
   const latestPGA = tagged[tagged.length - 1].pga;
 
-  // ── Persist to Vercel KV ───────────────────────────────────
+  // --- Persist to Vercel KV ---------------------------------------
   await Promise.all([
     appendSamples(tagged),
     setNodeStatus(node_id, latestPGA),
