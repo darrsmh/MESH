@@ -5,3 +5,10 @@ git config --global user.email.pio
 .vscode/ipch
 .vercel
 .env*
+node_modules
+.next
+.pio
+.vercel
+.env
+.env.local
+*.log
