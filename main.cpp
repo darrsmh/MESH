@@ -164,10 +164,15 @@ static void taskCloudUpload(void* /*arg*/) {
         vTaskDelay(pdMS_TO_TICKS(10000));
     }
 
+    // Sync system clock via NTP — required for TLS certificate validation
+    configTime(0, 0, "pool.ntp.org", "time.google.com");
+    log_i("[NTP] Clock synced");
+
     while (true) {
         if (!cloud.isConnected()) {
             log_w("[WiFi] Lost connection — reconnecting...");
             cloud.begin();
+            configTime(0, 0, "pool.ntp.org", "time.google.com");
         }
         cloud.uploadPending();
         vTaskDelay(pdMS_TO_TICKS(5000));
