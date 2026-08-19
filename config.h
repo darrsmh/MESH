@@ -59,6 +59,14 @@
 #define LORA_TX_DBM           22           // +22 dBm max for SX1262
 #define LORA_PREAMBLE         8            // 8 preamble symbols
 
+// 32-byte key shared by the deployed nodes and gateway. Replace before flashing.
+#define LORA_AUTH_KEY \
+		{ 0x8d, 0x42, 0x17, 0xa9, 0x63, 0xf0, 0x2c, 0x71, \
+			0x5b, 0xe6, 0x39, 0x84, 0xd2, 0x0f, 0xac, 0x58, \
+			0x96, 0x31, 0xc7, 0x4e, 0x02, 0xb8, 0x7a, 0xed, \
+			0x15, 0x60, 0xf3, 0x29, 0x4b, 0x8c, 0xd5, 0x77 }
+#define LORA_AUTH_TAG_BYTES    8
+
 // ── M-of-N Consensus Voting ────────────────────────────────────
 #define TOTAL_NODES           4
 #define VOTES_REQUIRED        3            // 3-of-4 confirms earthquake

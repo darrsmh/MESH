@@ -34,7 +34,9 @@ private:
     int   _rssi = 0;
     float _snr  = 0.0f;
 
-    uint8_t checksum(const uint8_t* d, size_t n);
+    uint32_t _txSequence = 0;
+    void authenticate(const uint8_t* data, size_t length,
+                      uint8_t* tag) const;
     bool    parseRx(LoRaPacket& out);
 
     static void IRAM_ATTR _isrRx();

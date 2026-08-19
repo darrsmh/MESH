@@ -188,8 +188,7 @@ void setup() {
     log_i("============================================");
 
     // Watchdog: reboot if any subscribed task stalls for > 10 s
-    esp_task_wdt_config_t wdtCfg{10000, 0, true};
-    esp_task_wdt_reconfigure(&wdtCfg);
+    esp_task_wdt_init(10, true);
 
     // Binary semaphore for earthquake alert signalling Core0 → Core1
     g_alertSem = xSemaphoreCreateBinary();

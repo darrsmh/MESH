@@ -1,14 +1,15 @@
 #include "LoRaComm.h"
+#include <esp_system.h>
+#include <mbedtls/md.h>
 static const char* T = "LoRa";
 LoRaComm* LoRaComm::_instance = nullptr;
 
 bool LoRaComm::begin() {
     _instance = this;
+    _txSequence = esp_random();
 
-    // LilyGO T3-S3 uses HSPI for the on-board SX1262
-    SPIClass* lspi = new SPIClass(HSPI);
-    lspi->begin(PIN_LORA_SCK, PIN_LORA_MISO, PIN_LORA_MOSI, PIN_LORA_CS);
-    _radio.setSPI(*lspi);
+    // RadioLib uses the board's default SPI bus for the on-board SX1262.
+    SPI.begin(PIN_LORA_SCK, PIN_LORA_MISO, PIN_LORA_MOSI, PIN_LORA_CS);
 
     int state = _radio.begin(
         LORA_FREQ_MHZ,    // 915.0 MHz
@@ -45,8 +46,8 @@ bool LoRaComm::sendAlert(uint8_t node_id, uint32_t ts_ms,
     pkt.timestamp_ms  = ts_ms;
     pkt.pga           = pga;
     pkt.confirm_count = confirms;
-    pkt.checksum      = 0;
-    pkt.checksum      = checksum((uint8_t*)&pkt, sizeof(pkt) - 1);
+    pkt.sequence      = ++_txSequence;
+    authenticate((uint8_t*)&pkt, offsetof(LoRaPacket, auth_tag), pkt.auth_tag);
 
     // Blocking transmit (~50 ms air time for SF7 BW125)
     int state = _radio.transmit((uint8_t*)&pkt, sizeof(pkt));
@@ -92,10 +93,13 @@ void IRAM_ATTR LoRaComm::_isrRx() {
     if (_instance) _instance->_rxFlag = true;
 }
 
-uint8_t LoRaComm::checksum(const uint8_t* d, size_t n) {
-    uint8_t cs = 0;
-    for (size_t i = 0; i < n; i++) cs ^= d[i];
-    return cs;
+void LoRaComm::authenticate(const uint8_t* data, size_t length,
+                            uint8_t* tag) const {
+    static const uint8_t key[32] = LORA_AUTH_KEY;
+    uint8_t digest[32];
+    const mbedtls_md_info_t* info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
+    mbedtls_md_hmac(info, key, sizeof(key), data, length, digest);
+    memcpy(tag, digest, LORA_AUTH_TAG_BYTES);
 }
 
 bool LoRaComm::parseRx(LoRaPacket& out) {
@@ -103,7 +107,11 @@ bool LoRaComm::parseRx(LoRaPacket& out) {
     int state = _radio.readData(buf, sizeof(buf));
     if (state != RADIOLIB_ERR_NONE) return false;
     memcpy(&out, buf, sizeof(out));
-    if (out.checksum != checksum(buf, sizeof(out) - 1)) return false;
     if (out.pkt_type != 0x01)                            return false;
+    if (out.node_id == 0 || out.node_id > TOTAL_NODES)   return false;
+    if (!isfinite(out.pga) || out.pga < 0.0f || out.pga > 16.0f) return false;
+    uint8_t expected[LORA_AUTH_TAG_BYTES];
+    authenticate(buf, offsetof(LoRaPacket, auth_tag), expected);
+    if (memcmp(expected, out.auth_tag, LORA_AUTH_TAG_BYTES) != 0) return false;
     return true;
 }

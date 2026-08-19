@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include "config.h"
 
 // ── Raw sensor readings ────────────────────────────────────────
 struct AccelData {
@@ -24,14 +25,15 @@ struct DetectionResult {
     uint32_t timestamp_ms;
 };
 
-// ── LoRa P2P packet (packed = 15 bytes on wire) ────────────────
+// ── LoRa P2P packet (packed = 23 bytes on wire) ────────────────
 struct __attribute__((packed)) LoRaPacket {
     uint8_t  pkt_type;        // 0x01 = seismic alert
     uint8_t  node_id;         // 1–4
     uint32_t timestamp_ms;
     float    pga;
     uint8_t  confirm_count;   // consecutive samples that triggered
-    uint8_t  checksum;        // XOR of bytes 0–13
+    uint32_t sequence;         // monotonic per-node message number
+    uint8_t  auth_tag[LORA_AUTH_TAG_BYTES];
 };
 
 // ── Vote received at gateway ───────────────────────────────────

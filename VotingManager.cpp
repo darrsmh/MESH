@@ -4,6 +4,15 @@ static const char* T = "Voting";
 
 ConsensusResult VotingManager::addVote(const LoRaPacket& pkt) {
     uint32_t now = millis();
+    const uint8_t index = pkt.node_id - 1;
+
+    if (pkt.node_id == 0 || pkt.node_id > TOTAL_NODES ||
+        (_seenSequence[index] && pkt.sequence <= _lastSequence[index])) {
+        log_w("[%s] Unauthorized or replayed Node%d packet", T, pkt.node_id);
+        return {false, _count, 0.0f, now};
+    }
+    _lastSequence[index] = pkt.sequence;
+    _seenSequence[index] = true;
 
     // Reject duplicate vote from same node within current window
     if (_active) {

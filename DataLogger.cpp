@@ -6,7 +6,7 @@ static const char* TC  = "Cloud";
 //  DataLogger — MicroSD binary logging
 // ================================================================
 bool DataLogger::begin() {
-    SPIClass spi(VSPI);
+    SPIClass spi(FSPI);
     spi.begin(PIN_SD_SCK, PIN_SD_MISO, PIN_SD_MOSI, PIN_SD_CS);
     if (!SD.begin(PIN_SD_CS, spi)) {
         log_e("[%s] Mount failed — check wiring", TS);

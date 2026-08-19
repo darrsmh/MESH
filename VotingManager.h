@@ -10,6 +10,8 @@ public:
     void            tick();   // Call every ~100 ms to expire stale windows
 private:
     NodeVote _votes[TOTAL_NODES] = {};
+    uint32_t _lastSequence[TOTAL_NODES] = {};
+    bool     _seenSequence[TOTAL_NODES] = {};
     uint8_t  _count   = 0;
     uint32_t _winMs   = 0;
     bool     _active  = false;
