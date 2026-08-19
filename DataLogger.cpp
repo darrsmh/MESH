@@ -143,8 +143,7 @@ bool WiFiCloud::httpsPost(const char* path, const String& body) {
     if (!isConnected()) return false;
 
     WiFiClientSecure client;
-    client.setInsecure();   // Skip cert verification for simplicity
-                            // Replace with setCACert(root_ca) for production
+    client.setCACert(ROOT_CA_PEM);
 
     HTTPClient http;
     String url = String("https://") + VERCEL_HOST + path;
