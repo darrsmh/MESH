@@ -6,12 +6,16 @@ const SAMPLES_KEY = "seismic:samples";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const limit = Math.min(Number(req.nextUrl.searchParams.get("limit")) || 5000, 10000);
+  const from = Number(req.nextUrl.searchParams.get("from")) || 0;
+  const to   = Number(req.nextUrl.searchParams.get("to"))   || Infinity;
+  const limit = Math.min(Number(req.nextUrl.searchParams.get("limit")) || 5000, 50000);
 
   const items = await redis.lrange(SAMPLES_KEY, 0, limit - 1);
-  const samples = items
+  const all = items
     .map((item) => (typeof item === "string" ? JSON.parse(item) : item))
     .reverse();
+
+  const samples = all.filter((s: { t: number }) => s.t >= from && s.t <= to);
 
   const header = "node_id,t,x,y,z,pga";
   const rows = samples.map(

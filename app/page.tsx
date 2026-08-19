@@ -378,6 +378,30 @@ export default function DashboardPage() {
           </span>
         </div>
 
+        <div className="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/80 p-3 text-xs text-slate-300">
+          <span className="font-medium text-slate-200">Export CSV:</span>
+          {[
+            { label: "1 min",  ms: 60_000 },
+            { label: "5 min",  ms: 300_000 },
+            { label: "15 min", ms: 900_000 },
+            { label: "30 min", ms: 1_800_000 },
+            { label: "1 hr",   ms: 3_600_000 },
+            { label: "All",    ms: 0 },
+          ].map(({ label, ms }) => (
+            <button
+              key={label}
+              onClick={() => {
+                const now = Date.now();
+                const from = ms === 0 ? 0 : now - ms;
+                window.open(`/api/export/samples?from=${from}&to=${now}`, "_blank");
+              }}
+              className="rounded-full border border-slate-700 bg-slate-800 px-2.5 py-1.5 transition hover:border-sky-500 hover:bg-sky-500/10 hover:text-sky-200"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         <div className="mb-6 space-y-3">
           {[1, 2, 3, 4].map((id, idx) => {
             const node = nodes.find((n) => n.id === id);
